@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Weather Component</title>
+</head>
+<body>
+
+<weather-today>
+    Current Weather Conditions Unavailable
+</weather-today>
+
+<script type="module">
+    class Weather extends HTMLElement {
+        constructor() {
+            super();
+            this.attachShadow({mode:'open'});
+
+            this.header = document.createElement('h1');
+            this.header.textContent = 'Weather';
+            this.img = document.createElement('img');
+            this.state = document.createElement('p');
+            this.temperature = document.createElement('p');
+            this.shadowRoot.appendChild(this.header);
+            this.shadowRoot.appendChild(this.img);
+            this.shadowRoot.appendChild(this.state);
+            this.shadowRoot.appendChild(this.temperature);
+
+        }
+
+        connectedCallback() {
+            let response1 = this.performGet("https://api.weather.gov/points/32.8753,-117.2361",0);
+            response1 = this.performGet(response1,1);
+            console.log(response1);
+
+            this.img.src = response1.icon;
+            this.temperature.textContent = "temp: "+ response1.temperature + response1.temperatureUnit;
+            this.state.textContent = "forecast: " + response1.shortForecast;
+
+
+        }
+
+        performGet(link, which){
+            let ret;
+            const request = new XMLHttpRequest();
+                request.open('GET', link,false);
+                request.addEventListener('load', ()=>{
+                    ret = JSON.parse(request.responseText);
+                    if(request.status === 200){
+                        if(which == 0){
+                            ret = ret.properties.forecast;
+                        } else{
+                            ret = ret.properties.periods[0];
+                        }
+                    }
+                });
+            request.send();
+            return ret;
+        }
+
+
+
+    }
+    customElements.define('weather-today',Weather);
+
+
+</script>
