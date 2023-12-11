@@ -41,7 +41,14 @@
             response1 = this.performGet(response1,1);
             console.log(response1);
 
-            this.img.src = response1.icon;
+            //this.img.src = response1.icon;
+            if(response1.shortForecast.includes('Rain')){
+                this.img.src = 'images/Rainy.png';
+            }else if(response1.shortForecast.includes('Cloud')){
+                this.img.src = 'images/Cloudy.png';
+            }else{
+                this.img.src = 'images/Sunny.png';
+            }
             this.temperature.textContent = "temp: "+ response1.temperature + response1.temperatureUnit;
             this.state.textContent = "forecast: " + response1.shortForecast;
 
