@@ -1,8 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Rating Component</title>
+
+    <template id="my-template">
+            <h1>Rating Widget</h1>
+            <output></output>
+            <input type="radio" name="star" id="star1" value="1"> <label for="star1"></label>
+            <input type="radio" name="star" id="star2" value="2"> <label for="star2"></label>
+            <input type="radio" name="star" id="star3" value="3"> <label for="star3"></label>
+
+            <style>
+                input {display:none;}
+                label::before {content:'\2606';}
+                label:hover {color:brown}
+            </style>
+
+    </template>
+</head>
+<body>
+
 <rating-widget>
-    <form action="https://httpbin.org/post" method="POST">
+    <form action="https://httpbin.org/post" method="POST" id="myForm">
         <label for="rating">How satisfied are you?</label>
         <input type="hidden" name="question" value="How satisfied are you?">
-        <input type="number" id="rating" name="rating" min="1" max="5" value="0" required>
+        <input type="number" id="rating" name="rating" min="1" max="3" value="0" required>
+        <input type="hidden" name="sentBy" value="HTML" id="sentBy">
         <button type="submit">Submit</button>
     </form>
 </rating-widget>
+
+<script>
+    class RatingWidget extends HTMLElement {
+        constructor() {
+            super();
+            const shadow = this.attachShadow({mode: 'open'});
+
+            const template = document.getElementById("my-template");
+            shadow.appendChild(template.content.cloneNode(true));
+
+            this.star1 = this.shadowRoot.getElementById('star1');
+            this.star2 = this.shadowRoot.getElementById('star2');
+            this.star3 = this.shadowRoot.getElementById('star3');
+            this.output = shadow.querySelector('output');
+        }
+
+        connectedCallback(){
+            this.star1.onclick = this.clicked;
+            this.star2.onclick = this.clicked;
+            this.star3.onclick = this.clicked;
+        }
+
+        clicked() {
+            document.getElementById('rating').value = this.value;
+            document.getElementById('sentBy').value = 'JS';
+
+            if(this.value == 3){
+                this.parentNode.querySelector("output").textContent = 'Thanks for the ' + this.value + ' rating';
+            }else{
+                this.parentNode.querySelector("output").textContent = 'Thanks for the feedback of ' + this.value + '. We will try better';
+            }
+
+            //.children[0].textContent = xhr.responseText;
+            console.log(this.value);
+            this.parentNode.querySelector('label').remove();
+            this.parentNode.querySelector('label').remove();
+            this.parentNode.querySelector('label').remove();
+            let formData = new FormData(document.getElementById('myForm'));
+            let xhr = new XMLHttpRequest();
+
+            xhr.open('POST', 'https://httpbin.org/post',true);
+            xhr.setRequestHeader('X-Sent-By', 'JS');
+
+            xhr.onload = function() {
+                if(xhr.status === 200){
+                    console.log(xhr.responseText);
+                } else {
+                    console.error('Error', xhr.statusText);
+                }
+
+            };
+
+            xhr.onerror = function() {
+                console.error('Network Error');
+            };
+
+            xhr.send(formData);
+        }
+    }
+    customElements.define('rating-widget', RatingWidget);
+</script>
+
+</body>
